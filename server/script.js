@@ -2,9 +2,7 @@ import "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import prettyBytes from "pretty-bytes";
-import setupEditors from "./setupEditor.js";
-
-const { requestEditor, updateResponseEditor } = setupEditors();
+import setupEditors from "./setupEditor";
 
 const form = document.querySelector("[data-form]");
 const queryParamsContainer = document.querySelector("[data-query-params]");
@@ -28,9 +26,9 @@ document
     requestHeadersContainer.append(createKeyValuePair());
   });
 
-axios.interceptors.response.use(updateEndTime, (e) => {
-  return Promise.reject(updateEndTime(e.response));
-});
+queryParamsContainer.append(createKeyValuePair());
+requestHeadersContainer.append(createKeyValuePair());
+
 axios.interceptors.request.use((request) => {
   request.customData = request.customData || {};
   request.customData.startTime = new Date().getTime();
@@ -43,6 +41,12 @@ function updateEndTime(response) {
     new Date().getTime() - response.config.customData.startTime;
   return response;
 }
+
+axios.interceptors.response.use(updateEndTime, (e) => {
+  return Promise.reject(updateEndTime(e.response));
+});
+
+const { requestEditor, updateResponseEditor } = setupEditors();
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -75,20 +79,7 @@ form.addEventListener("submit", (e) => {
     });
 });
 
-function createKeyValuePair() {
-  const element = keyValueTemplate.content.cloneNode(true);
-  element.querySelector("[data-remove-btn]").addEventListener("click", (e) => {
-    e.target.closest("[data-key-value-pair]").remove();
-  });
-  return element;
-}
-
 function updateResponseDetails(response) {
-  console.log("hi");
-  console.log("response: ", response);
-  console.log("response customdata: ", response.customData.time);
-  console.log("response custom data time: ", response.customData);
-
   document.querySelector(
     "[data-status]"
   ).textContent = `${response.status} ${response.statusText}`;
@@ -112,6 +103,15 @@ function updateResponseHeaders(headers) {
     responseHeadersContainer.append(valueElement);
   });
 }
+
+function createKeyValuePair() {
+  const element = keyValueTemplate.content.cloneNode(true);
+  element.querySelector("[data-remove-btn]").addEventListener("click", (e) => {
+    e.target.closest("[data-key-value-pair]").remove();
+  });
+  return element;
+}
+
 function keyValuePairToObjects(container) {
   const pairs = container.querySelectorAll("[data-key-value-pair]");
 

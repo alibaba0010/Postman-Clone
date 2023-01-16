@@ -15,7 +15,10 @@ export default function setupEditors() {
   ];
 
   const requestEditor = new EditorView({
-    state: EditorState.create({ doc: "{\n\t\n}", extensions: basicExtensions }),
+    state: EditorState.create({
+      doc: "{\n\t\n}",
+      extensions: basicExtensions,
+    }),
     parent: jsonRequestBody,
   });
 
